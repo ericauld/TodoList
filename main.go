@@ -35,6 +35,15 @@ func getTodoListEndpoint(writer http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(writer).Encode(todoItems)
 }
 
+func addItemEndpoint(writer http.ResponseWriter, request *http.Request) {
+	var item todoItem
+	item.Title = request.FormValue("Title")
+
+	SQLQuery, err := db.Prepare("INSERT INTO tasks(title) VALUES(?);")
+	if err != nil {log.Fatal(err)}
+	SQLQuery.Exec(item.Title)
+}
+
 func main() {
 	password, err := ioutil.ReadFile("./password.txt")
 	if err != nil {log.Fatal(err)}
@@ -45,6 +54,7 @@ func main() {
 	defer db.Close()
 
 	http.HandleFunc("/api/todos", getTodoListEndpoint)
+	http.HandleFunc("/api/newItem", addItemEndpoint)
 	err = http.ListenAndServe(":8080", nil)
 	if err != nil {log.Fatal(err)}
 }
