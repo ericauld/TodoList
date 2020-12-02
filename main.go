@@ -44,7 +44,7 @@ func main() {
 	if err != nil {log.Fatal(err)}
 	defer db.Close()
 
-	http.HandleFunc("/", getTodoListEndpoint)
+	http.HandleFunc("/api/todos", getTodoListEndpoint)
 	err = http.ListenAndServe(":8080", nil)
 	if err != nil {log.Fatal(err)}
 }
