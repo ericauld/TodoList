@@ -6,6 +6,9 @@ class TodoList extends React.Component {
     super(props);
     this.state = {items: [],
                   inputBox: ''};
+                  
+    // this.createNewItem = this.createNewItem.bind(this);
+    // this.handleChange = this.createNewItem.bind(this);
   }
   
   createNewItem = (e) => {
@@ -25,7 +28,7 @@ class TodoList extends React.Component {
   render() {
     return (
       <div>
-        <input onChange={this.handleChange} onKeyPress={this.createNewItem }/>
+        <input value={this.state.inputBox} onChange={this.handleChange} onKeyPress={this.createNewItem }/>
         <ul>
           {this.state.items.map(item => (
             <li>
