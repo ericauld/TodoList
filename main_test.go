@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"fmt"
 	//"io/ioutil"
 	//"net/http/httptest"
 	"encoding/json"
@@ -19,17 +20,16 @@ func TestAddItem(t *testing.T) {
 func TestDeleteItem(t *testing.T) {
 	client := http.Client{}
 
-	item := todoItem{"Go to store"}
+	item := todoItem{""}
 	jsonReq, err := json.Marshal(item)
+	fmt.Printf("%s\n", jsonReq)
+
+	bytesReq := bytes.NewBuffer(jsonReq)
 	request, err :=  http.NewRequest(
 		"DELETE",
 		"http://localhost:8080/api/deleteItem",
-		bytes.NewBuffer(jsonReq))
+		bytesReq)
 	request.Header.Set("Content-Type", "application/json")
-	response, err := client.Do(request)
+	_, err = client.Do(request)
 	if err != nil {log.Fatal(err)}
-
-	if response.Status != "202 Accepted" {
-		log.Fatal("Response was not 202 Accepted; it was ", response.Status)
-	}
 }

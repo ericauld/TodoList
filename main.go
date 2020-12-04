@@ -45,7 +45,13 @@ func addItem(writer http.ResponseWriter, request *http.Request) {
 }
 
 func deleteItem(writer http.ResponseWriter, request *http.Request) {
-	fmt.Println("Delete item was called")
+	b, _ := ioutil.ReadAll(request.Body)
+	var item todoItem
+	json.Unmarshal(b, &item)
+
+	SQLQuery, err := db.Prepare("DELETE FROM tasks WHERE title=?")
+	if err != nil {log.Fatal(err)}
+	SQLQuery.Exec(item.Title)
 }
 
 func main() {
