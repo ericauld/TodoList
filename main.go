@@ -54,6 +54,25 @@ func deleteItem(writer http.ResponseWriter, request *http.Request) {
 	SQLQuery.Exec(item.Title)
 }
 
+func findItem(writer http.ResponseWriter, request *http.Request) {
+	b, _ := ioutil.ReadAll(request.Body)
+	var item todoItem
+	json.Unmarshal(b, &item)
+
+	SQLQuery, err := db.Prepare("SELECT COUNT(*) FROM tasks WHERE title=?")
+	if err != nil {log.Fatal(err)}
+	var nMatchingRows int
+	row := SQLQuery.QueryRow(item.Title)
+	row.Scan(&nMatchingRows)
+
+	//if nRowsAffected == 0 {
+	//	writer.WriteHeader(http.StatusNotFound)
+	//} else {
+	//	writer.WriteHeader(http.StatusAccepted)
+	//}
+	fmt.Println(nMatchingRows, " matching rows were found (from find item method)")
+}
+
 func main() {
 	password, err := ioutil.ReadFile("./password.txt")
 	if err != nil {log.Fatal(err)}
@@ -66,6 +85,7 @@ func main() {
 	http.HandleFunc("/api/todos", getTodoList)
 	http.HandleFunc("/api/newItem", addItem)
 	http.HandleFunc("/api/deleteItem", deleteItem)
+	http.HandleFunc("/api/findItem", findItem)
 	err = http.ListenAndServe(":8080", nil)
 	if err != nil {log.Fatal(err)}
 }
