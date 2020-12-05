@@ -25,7 +25,14 @@ class TodoList extends React.Component {
     }
   }
 
-  deleteItem = (title) => {alert(title)}
+  deleteItem = (title) => {
+    // var formData = new FormData()
+    // formData.append('Title', title)
+    fetch("/api/deleteItem", {
+      method: "DELETE", 
+      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      body: JSON.stringify({Title: title})})
+  }
 
   handleChange = (e) => { this.setState({ inputBox: e.target.value }); }
 

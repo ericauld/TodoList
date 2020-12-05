@@ -20,7 +20,7 @@ func TestAddItem(t *testing.T) {
 func TestDeleteItem(t *testing.T) {
 	client := http.Client{}
 
-	item := todoItem{""}
+	item := todoItem{"Some item"}
 	jsonReq, err := json.Marshal(item)
 	fmt.Printf("%s\n", jsonReq)
 
