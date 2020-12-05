@@ -2,12 +2,12 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"encoding/json"
-	_ "github.com/go-sql-driver/mysql"
 )
 
 type todoItem struct {
@@ -16,7 +16,7 @@ type todoItem struct {
 
 var db *sql.DB
 
-func getTodoListEndpoint(writer http.ResponseWriter, request *http.Request) {
+func getTodoList(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type", "application/json")
 
 	SQLQuery := "SELECT title FROM tasks;"
@@ -35,11 +35,21 @@ func getTodoListEndpoint(writer http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(writer).Encode(todoItems)
 }
 
-func addItemEndpoint(writer http.ResponseWriter, request *http.Request) {
+func addItem(writer http.ResponseWriter, request *http.Request) {
 	var item todoItem
 	item.Title = request.FormValue("Title")
 
 	SQLQuery, err := db.Prepare("INSERT INTO tasks(title) VALUES(?);")
+	if err != nil {log.Fatal(err)}
+	SQLQuery.Exec(item.Title)
+}
+
+func deleteItem(writer http.ResponseWriter, request *http.Request) {
+	b, _ := ioutil.ReadAll(request.Body)
+	var item todoItem
+	json.Unmarshal(b, &item)
+
+	SQLQuery, err := db.Prepare("DELETE FROM tasks WHERE title=?")
 	if err != nil {log.Fatal(err)}
 	SQLQuery.Exec(item.Title)
 }
@@ -53,8 +63,9 @@ func main() {
 	if err != nil {log.Fatal(err)}
 	defer db.Close()
 
-	http.HandleFunc("/api/todos", getTodoListEndpoint)
-	http.HandleFunc("/api/newItem", addItemEndpoint)
+	http.HandleFunc("/api/todos", getTodoList)
+	http.HandleFunc("/api/newItem", addItem)
+	http.HandleFunc("/api/deleteItem", deleteItem)
 	err = http.ListenAndServe(":8080", nil)
 	if err != nil {log.Fatal(err)}
 }
