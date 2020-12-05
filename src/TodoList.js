@@ -8,9 +8,6 @@ class TodoList extends React.Component {
       items: [],
       inputBox: ''
     };
-
-    // this.createNewItem = this.createNewItem.bind(this);
-    // this.handleChange = this.createNewItem.bind(this);
   }
 
   createNewItem = (e) => {
@@ -19,19 +16,24 @@ class TodoList extends React.Component {
       formData.append('Title', this.state.inputBox)
       fetch("/api/newItem", { method: "POST", body: formData })
       this.setState((state, props) => ({
-        items: [...state.items, { "Title": this.state.inputBox }],
+        items: [...state.items, {Title: this.state.inputBox}],
+        //quotes around "Title" in line above?
         inputBox: ''
       }))
     }
   }
 
   deleteItem = (title) => {
-    // var formData = new FormData()
-    // formData.append('Title', title)
     fetch("/api/deleteItem", {
       method: "DELETE", 
-      headers: {'Content-Type': 'application/json; charset=UTF-8'},
+      headers: {'Content-Type': 'application/json; charset=UTF-8'}, 
       body: JSON.stringify({Title: title})})
+    var arr = [...this.state.items]
+    var index = this.state.items.findIndex(x => x.Title === title)
+    if (index !== -1) {
+      arr.splice(index, 1)
+      this.setState({items: arr})
+    }
   }
 
   handleChange = (e) => { this.setState({ inputBox: e.target.value }); }
