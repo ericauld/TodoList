@@ -65,12 +65,11 @@ func findItem(writer http.ResponseWriter, request *http.Request) {
 	row := SQLQuery.QueryRow(item.Title)
 	row.Scan(&nMatchingRows)
 
-	//if nRowsAffected == 0 {
-	//	writer.WriteHeader(http.StatusNotFound)
-	//} else {
-	//	writer.WriteHeader(http.StatusAccepted)
-	//}
-	fmt.Println(nMatchingRows, " matching rows were found (from find item method)")
+	if nMatchingRows == 0 {
+		writer.WriteHeader(http.StatusNotFound)
+	} else {
+		writer.WriteHeader(http.StatusAccepted)
+	}
 }
 
 func main() {
