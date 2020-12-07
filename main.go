@@ -16,7 +16,11 @@ type todoItem struct {
 
 var db *sql.DB
 
-func getTodoList(writer http.ResponseWriter, request *http.Request) {
+var (
+	database *DatabaseConnection
+)
+
+func getTodoListHandler(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type", "application/json")
 
 	SQLQuery := "SELECT title FROM tasks;"
@@ -35,7 +39,7 @@ func getTodoList(writer http.ResponseWriter, request *http.Request) {
 	json.NewEncoder(writer).Encode(todoItems)
 }
 
-func addItem(writer http.ResponseWriter, request *http.Request) {
+func addItemHandler(writer http.ResponseWriter, request *http.Request) {
 	var item todoItem
 	item.Title = request.FormValue("Title")
 
@@ -44,7 +48,7 @@ func addItem(writer http.ResponseWriter, request *http.Request) {
 	SQLQuery.Exec(item.Title)
 }
 
-func deleteItem(writer http.ResponseWriter, request *http.Request) {
+func deleteItemHandler(writer http.ResponseWriter, request *http.Request) {
 	b, _ := ioutil.ReadAll(request.Body)
 	var item todoItem
 	json.Unmarshal(b, &item)
@@ -54,7 +58,7 @@ func deleteItem(writer http.ResponseWriter, request *http.Request) {
 	SQLQuery.Exec(item.Title)
 }
 
-func findItem(writer http.ResponseWriter, request *http.Request) {
+func findItemHandler(writer http.ResponseWriter, request *http.Request) {
 	b, _ := ioutil.ReadAll(request.Body)
 	var item todoItem
 	json.Unmarshal(b, &item)
@@ -81,10 +85,10 @@ func main() {
 	if err != nil {log.Fatal(err)}
 	defer db.Close()
 
-	http.HandleFunc("/api/todos", getTodoList)
-	http.HandleFunc("/api/newItem", addItem)
-	http.HandleFunc("/api/deleteItem", deleteItem)
-	http.HandleFunc("/api/findItem", findItem)
+	http.HandleFunc("/api/todos", getTodoListHandler)
+	http.HandleFunc("/api/newItem", addItemHandler)
+	http.HandleFunc("/api/deleteItemHandler", deleteItemHandler)
+	http.HandleFunc("/api/findItemHandler", findItemHandler)
 	err = http.ListenAndServe(":8080", nil)
 	if err != nil {log.Fatal(err)}
 }
