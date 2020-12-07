@@ -1,19 +1,31 @@
 package main
 
 import (
-	"testing"
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
-	"fmt"
-	//"io/ioutil"
-	//"net/http/httptest"
-	"encoding/json"
-	"bytes"
- 	//"os"
-	//"database/sql"
-	//"io/ioutil"
+	"strings"
+	"testing"
 )
+
+func TestPingDatabase(t *testing.T) {
+	database := openDatabaseConnection()
+	err := database.ping()
+	if err != nil {t.Error(err)}
+}
+
+func TestPrintTodoList(t *testing.T) {
+	database := openDatabaseConnection()
+	todoList := database.getTodoList()
+	fmt.Println("===========Todo Items ============")
+	fmt.Println(strings.Join(todoList, "\n"))
+	fmt.Println("===========End list===============")
+}
+
+
 
 func TestFindItem(t *testing.T) {
 	client := http.Client{}

@@ -19,6 +19,7 @@
 .env.production.local
 password.txt
 .eslintcache
+.idea
 
 npm-debug.log*
 yarn-debug.log*
