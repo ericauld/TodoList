@@ -87,8 +87,8 @@ func main() {
 
 	http.HandleFunc("/api/todos", getTodoListHandler)
 	http.HandleFunc("/api/newItem", addItemHandler)
-	http.HandleFunc("/api/deleteItemHandler", deleteItemHandler)
-	http.HandleFunc("/api/findItemHandler", findItemHandler)
+	http.HandleFunc("/api/deleteItem", deleteItemHandler)
+	http.HandleFunc("/api/findItem", findItemHandler)
 	err = http.ListenAndServe(":8080", nil)
 	if err != nil {log.Fatal(err)}
 }

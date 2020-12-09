@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -52,7 +51,7 @@ func AddAndDeleteAnItemViaAPICalls(t *testing.T) {
 			"obviating the test to add it", item.Title)
 	}
 
-	err = addItem(itemTitle, item)
+	err = insertItem(itemTitle, item)
 	if err != nil {t.Error(err)}
 
 	err = findItem(item)
@@ -72,18 +71,13 @@ func AddAndDeleteAnItemViaAPICalls(t *testing.T) {
 
 func deleteItem(item todoItem) error {
 	client := http.Client{}
-	requestBodyAsJsonByteSlice, err := json.Marshal(item)
-	deleteRequestBodyAsIOWriter := bytes.NewBuffer(requestBodyAsJsonByteSlice)
-	deleteRequest, err := http.NewRequest(
-		"DELETE",
-		"http://localhost:8080/api/deleteItemHandler",
-		deleteRequestBodyAsIOWriter)
-	deleteRequest.Header.Set("Content-Type", "application/json")
+	err, deleteRequest := setupDeleteRequest(item)
 	_, err = client.Do(deleteRequest)
 	return err
 }
 
-func addItem(itemTitle string, item todoItem) error {
+
+func insertItem(itemTitle string, item todoItem) error {
 	_, err := http.PostForm(
 		"http://localhost:8080/api/newItem",
 		url.Values{"Title": {itemTitle}})
@@ -93,13 +87,7 @@ func addItem(itemTitle string, item todoItem) error {
 
 func findItem(item todoItem) error {
 	client := http.Client{}
-	requestBodyAsJsonByteSlice, _ := json.Marshal(item)
-	requestBodyAsIOWriter := bytes.NewBuffer(requestBodyAsJsonByteSlice)
-	request, _ := http.NewRequest(
-		"GET",
-		"http://localhost:8080/api/findItemHandler",
-		requestBodyAsIOWriter)
-	request.Header.Set("Content-Type", "application/json")
+	request, _ := setupFindRequest(item)
 	response, _ := client.Do(request)
 	if response.StatusCode != http.StatusAccepted {
 		return fmt.Errorf("item %v was not found", item.Title)
@@ -107,13 +95,31 @@ func findItem(item todoItem) error {
 	return nil
 }
 
-func NewFindRequest(item todoItem) {
-
+func setupFindRequest(item todoItem) (*http.Request, error) {
+	requestBodyAsJsonByteSlice, _ := json.Marshal(item)
+	requestBodyAsIOWriter := bytes.NewBuffer(requestBodyAsJsonByteSlice)
+	request, err := http.NewRequest(
+		"GET",
+		"http://localhost:8080/api/findItem",
+		requestBodyAsIOWriter)
+	request.Header.Set("Content-Type", "application/json")
+	return request, err
 }
 
-func TestPingDatabase(t *testing.T) {
-	err := database.ping()
-	if err != nil {t.Error(err)}
+func setupDeleteRequest(item todoItem) (error, *http.Request) {
+	err, deleteRequestBodyAsIOWriter := convertToJSONInIOWriter(item)
+	deleteRequest, err := http.NewRequest(
+		"DELETE",
+		"http://localhost:8080/api/deleteItem",
+		deleteRequestBodyAsIOWriter)
+	deleteRequest.Header.Set("Content-Type", "application/json")
+	return err, deleteRequest
+}
+
+func convertToJSONInIOWriter(item todoItem) (error, *bytes.Buffer) {
+	requestBodyAsJsonByteSlice, err := json.Marshal(item)
+	deleteRequestBodyAsIOWriter := bytes.NewBuffer(requestBodyAsJsonByteSlice)
+	return err, deleteRequestBodyAsIOWriter
 }
 
 func printTodoList(t *testing.T) {
@@ -121,29 +127,5 @@ func printTodoList(t *testing.T) {
 	fmt.Println("===========Todo Items ============")
 	fmt.Println(strings.Join(todoList, "\n"))
 	fmt.Println("===========End list===============")
-}
-
-func TestAddItem(t *testing.T) {
-	if testing.Short() {t.Skip()}
-	_, err := http.PostForm("http://localhost:8080/api/newItem", url.Values{"Title": {"new test item"}})
-	if err != nil {log.Fatal(err)}
-}
-
-func TestDeleteItem(t *testing.T) {
-	if testing.Short() {t.Skip()}
-	client := http.Client{}
-
-	item := todoItem{"new test item"}
-	jsonReq, err := json.Marshal(item)
-	//fmt.Printf( "%s\n", jsonReq)
-
-	bytesReq := bytes.NewBuffer(jsonReq)
-	request, err :=  http.NewRequest(
-		"DELETE",
-		"http://localhost:8080/api/deleteItemHandler",
-		bytesReq)
-	request.Header.Set("Content-Type", "application/json")
-	_, err = client.Do(request)
-	if err != nil {log.Fatal(err)}
 }
 
