@@ -37,12 +37,12 @@ func (databaseConnection *DatabaseConnection) findItem(itemTitle string) error {
 	return nil
 }
 
-func (databaseConnection *DatabaseConnection) addItem(itemTitle string) error {
+func (databaseConnection *DatabaseConnection) addItem(item todoItem) error {
 	SQLQuery, err := databaseConnection.db.Prepare(
 		"INSERT INTO tasks(title) VALUES(?);")
 	defer SQLQuery.Close()
 	if err != nil {return err}
-	_, err = SQLQuery.Exec(itemTitle)
+	_, err = SQLQuery.Exec(item.Title)
 	return err
 }
 
@@ -68,20 +68,20 @@ func (databaseConnection *DatabaseConnection) countItemsWhoseTitleIs(itemTitle s
 	return nMatchingRows, nil
 }
 
-func (databaseConnection *DatabaseConnection) getTodoList() []string {
+func (databaseConnection *DatabaseConnection) getTodoList() []todoItem {
 	SQLQuery := "SELECT title FROM tasks;"
 	rows, err := databaseConnection.db.Query(SQLQuery)
 	if err != nil {log.Fatal(err)}
 	defer rows.Close()
 
-	var todoItemTitles []string
+	var todoItems []todoItem
 	for rows.Next() {
-		var todoItemTitle string
-		err = rows.Scan(&todoItemTitle)
+		var item todoItem
+		err = rows.Scan(&item.Title)
 		if err != nil {log.Fatal(err)}
-		todoItemTitles = append(todoItemTitles, todoItemTitle)
+		todoItems = append(todoItems, item)
 	}
-	return todoItemTitles
+	return todoItems
 }
 
 func getLoginString() string {

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strings"
 	"testing"
 )
 
@@ -22,12 +21,13 @@ func TestHandlersViaAPICalls(t *testing.T) {
 
 func AddAndDeleteOneItem(t *testing.T) {
 	itemTitle := "dummy test item"
+	item := todoItem{Title: itemTitle}
 
 	err := database.findItem(itemTitle)
 	if err == nil {t.Error("item ", itemTitle, "was already in database," +
 		"obviating the test to add it to the database")}
 
-	err = database.addItem(itemTitle)
+	err = database.addItem(item)
 	if err != nil {t.Error(err)}
 
 	err = database.findItem(itemTitle)
@@ -45,31 +45,31 @@ func AddAndDeleteAnItemViaAPICalls(t *testing.T) {
 	const itemTitle = "new test item"
 	item := todoItem{itemTitle}
 
-	err := findItem(item)
+	err := findItemViaAPICall(item)
 	if err == nil {
 		t.Errorf("Task with title %v was already present in the database, "+
 			"obviating the test to add it", item.Title)
 	}
 
-	err = insertItem(itemTitle, item)
+	err = insertItemViaAPICall(itemTitle, item)
 	if err != nil {t.Error(err)}
 
-	err = findItem(item)
+	err = findItemViaAPICall(item)
 	if err != nil {
 		t.Error("Item", item.Title, "was not found after it was added")
 	}
 
-	err = deleteItem(item)
+	err = deleteItemViaAPICall(item)
 	if err != nil {t.Error(err)}
 
-	err = findItem(item)
+	err = findItemViaAPICall(item)
 	if err == nil {
 		t.Error("Item", item.Title, "was still in the database " +
 			"when the test should have deleted it")
 	}
 }
 
-func deleteItem(item todoItem) error {
+func deleteItemViaAPICall(item todoItem) error {
 	client := http.Client{}
 	err, deleteRequest := setupDeleteRequest(item)
 	_, err = client.Do(deleteRequest)
@@ -77,7 +77,7 @@ func deleteItem(item todoItem) error {
 }
 
 
-func insertItem(itemTitle string, item todoItem) error {
+func insertItemViaAPICall(itemTitle string, item todoItem) error {
 	_, err := http.PostForm(
 		"http://localhost:8080/api/newItem",
 		url.Values{"Title": {itemTitle}})
@@ -85,7 +85,7 @@ func insertItem(itemTitle string, item todoItem) error {
 	return err
 }
 
-func findItem(item todoItem) error {
+func findItemViaAPICall(item todoItem) error {
 	client := http.Client{}
 	request, _ := setupFindRequest(item)
 	response, _ := client.Do(request)
@@ -125,7 +125,9 @@ func convertToJSONInIOWriter(item todoItem) (error, *bytes.Buffer) {
 func printTodoList(t *testing.T) {
 	todoList := database.getTodoList()
 	fmt.Println("===========Todo Items ============")
-	fmt.Println(strings.Join(todoList, "\n"))
+	for _, item := range todoList {
+		fmt.Println(item.Title)
+	}
 	fmt.Println("===========End list===============")
 }
 

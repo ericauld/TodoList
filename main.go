@@ -18,31 +18,14 @@ var (
 
 func getTodoListHandler(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type", "application/json")
-
-	SQLQuery := "SELECT title FROM tasks;"
-	rows, err := database.db.Query(SQLQuery)
-	if err != nil {log.Fatal(err)}
-	defer rows.Close()
-
-	var todoItems []todoItem
-	for rows.Next() {
-		var item todoItem
-		err = rows.Scan(&item.Title)
-		if err != nil {log.Fatal(err)}
-		todoItems = append(todoItems, item)
-	}
-
+	todoItems := database.getTodoList()
 	json.NewEncoder(writer).Encode(todoItems)
 }
 
 func addItemHandler(writer http.ResponseWriter, request *http.Request) {
 	var item todoItem
 	item.Title = request.FormValue("Title")
-
-	SQLQuery, err := database.db.Prepare("INSERT INTO tasks(title) VALUES(?);")
-	defer SQLQuery.Close()
-	if err != nil {log.Fatal(err)}
-	SQLQuery.Exec(item.Title)
+	database.addItem(item)
 }
 
 func deleteItemHandler(writer http.ResponseWriter, request *http.Request) {
