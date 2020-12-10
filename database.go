@@ -2,40 +2,86 @@ package main
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
-	"fmt"
 )
 
 type DatabaseConnection struct {
 	db *sql.DB
 }
 
-func openDatabaseConnection() *DatabaseConnection {
+func newDatabaseConnection() *DatabaseConnection {
 	loginInfo := getLoginString()
 	db, err := sql.Open("mysql", loginInfo)
 	if err != nil {log.Fatal(err)}
 	return &DatabaseConnection{db}
 }
 
+func (databaseConnection *DatabaseConnection) close() error {
+	return databaseConnection.close()
+}
+
 func (databaseConnection *DatabaseConnection) ping() error {
 	return databaseConnection.db.Ping()
 }
 
-func (databaseConnection *DatabaseConnection) getTodoList() []string {
+func (databaseConnection *DatabaseConnection) findItem(item todoItem) error {
+	nMatchingItems, err := databaseConnection.countItemsWhoseTitleIs(item.Title)
+	if err != nil {return err}
+
+	if nMatchingItems == 0 {
+		return errors.New("no row with the given title was found")
+	}
+	return nil
+}
+
+func (databaseConnection *DatabaseConnection) addItem(item todoItem) error {
+	SQLQuery, err := databaseConnection.db.Prepare(
+		"INSERT INTO tasks(title) VALUES(?);")
+	defer SQLQuery.Close()
+	if err != nil {return err}
+	_, err = SQLQuery.Exec(item.Title)
+	return err
+}
+
+func (databaseConnection *DatabaseConnection) deleteItem(item todoItem) error {
+	SQLQuery, err := databaseConnection.db.Prepare(
+		"DELETE FROM tasks WHERE title=?;")
+	defer SQLQuery.Close()
+	if err != nil {return err}
+	_, err = SQLQuery.Exec(item.Title)
+	return err
+}
+
+func (databaseConnection *DatabaseConnection) countItemsWhoseTitleIs(itemTitle string) (int, error) {
+	SQLQuery, err := databaseConnection.db.Prepare(
+		"SELECT COUNT(*) FROM tasks WHERE title=?")
+	defer SQLQuery.Close()
+	if err != nil {
+		return 0, err
+	}
+	var nMatchingRows int
+	row := SQLQuery.QueryRow(itemTitle)
+	row.Scan(&nMatchingRows)
+	return nMatchingRows, nil
+}
+
+func (databaseConnection *DatabaseConnection) getTodoList() []todoItem {
 	SQLQuery := "SELECT title FROM tasks;"
 	rows, err := databaseConnection.db.Query(SQLQuery)
 	if err != nil {log.Fatal(err)}
 	defer rows.Close()
 
-	var todoItemTitles []string
+	var todoItems []todoItem
 	for rows.Next() {
-		var todoItemTitle string
-		err = rows.Scan(&todoItemTitle)
+		var item todoItem
+		err = rows.Scan(&item.Title)
 		if err != nil {log.Fatal(err)}
-		todoItemTitles = append(todoItemTitles, todoItemTitle)
+		todoItems = append(todoItems, item)
 	}
-	return todoItemTitles
+	return todoItems
 }
 
 func getLoginString() string {

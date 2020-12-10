@@ -4,115 +4,128 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
-	"strings"
 	"testing"
 )
 
-func TestPingDatabase(t *testing.T) {
-	database := openDatabaseConnection()
-	err := database.ping()
+func TestHandlers(t *testing.T) {
+	database = newDatabaseConnection()
+	t.Run("Print", printTodoList)
+	t.Run("Add and delete", AddAndDeleteOneItem)
+}
+
+func TestHandlersViaAPICalls(t *testing.T) {
+	t.Run("Add and delete", AddAndDeleteAnItemViaAPICalls)
+}
+
+func AddAndDeleteOneItem(t *testing.T) {
+	itemTitle := "dummy test item"
+	item := todoItem{Title: itemTitle}
+
+	err := database.findItem(item)
+	if err == nil {t.Error("item ", itemTitle, "was already in database," +
+		"obviating the test to add it to the database")}
+
+	err = database.addItem(item)
 	if err != nil {t.Error(err)}
+
+	err = database.findItem(item)
+	if err != nil {t.Error(err)}
+
+	err = database.deleteItem(item)
+	if err != nil {t.Error(err)}
+
+	err = database.findItem(item)
+	if err == nil {t.Error("item with title", itemTitle, "was still in the database " +
+		"when it should have been deleted")}
 }
 
-func TestPrintTodoList(t *testing.T) {
-	database := openDatabaseConnection()
-	todoList := database.getTodoList()
-	fmt.Println("===========Todo Items ============")
-	fmt.Println(strings.Join(todoList, "\n"))
-	fmt.Println("===========End list===============")
-}
+func AddAndDeleteAnItemViaAPICalls(t *testing.T) {
+	const itemTitle = "new test item"
+	item := todoItem{itemTitle}
 
+	err := findItemViaAPICall(item)
+	if err == nil {
+		t.Errorf("Task with title %v was already present in the database, "+
+			"obviating the test to add it", item.Title)
+	}
 
+	err = insertItemViaAPICall(itemTitle, item)
+	if err != nil {t.Error(err)}
 
-func TestFindItem(t *testing.T) {
-	client := http.Client{}
+	err = findItemViaAPICall(item)
+	if err != nil {
+		t.Error("Item", item.Title, "was not found after it was added")
+	}
 
-	item := todoItem{"Call Mom"}
-	requestAsJsonByteSlice, err := json.Marshal(item)
+	err = deleteItemViaAPICall(item)
+	if err != nil {t.Error(err)}
 
-	requestAsIOWriter := bytes.NewBuffer(requestAsJsonByteSlice)
-	request, err :=  http.NewRequest(
-		"GET",
-		"http://localhost:8080/api/findItem",
-		requestAsIOWriter)
-	request.Header.Set("Content-Type", "application/json")
-	response, err := client.Do(request)
-	if err != nil {log.Fatal(err)}
-	if response.StatusCode == http.StatusAccepted {
-		fmt.Println("Item was found")
-	} else {
-		fmt.Println("Item was not found")
+	err = findItemViaAPICall(item)
+	if err == nil {
+		t.Error("Item", item.Title, "was still in the database " +
+			"when the test should have deleted it")
 	}
 }
 
-func TestAddAndDeleteItem(t *testing.T) {
+func deleteItemViaAPICall(item todoItem) error {
 	client := http.Client{}
+	err, deleteRequest := setupDeleteRequest(item)
+	_, err = client.Do(deleteRequest)
+	return err
+}
 
-	item := todoItem{"new test item"}
-	requestBodyAsJsonByteSlice, err := json.Marshal(item)
 
-	requestBodyAsIOWriter := bytes.NewBuffer(requestBodyAsJsonByteSlice)
-	request, err :=  http.NewRequest(
+func insertItemViaAPICall(itemTitle string, item todoItem) error {
+	_, err := http.PostForm(
+		"http://localhost:8080/api/newItem",
+		url.Values{"Title": {itemTitle}})
+	if err != nil {return err}
+	return err
+}
+
+func findItemViaAPICall(item todoItem) error {
+	client := http.Client{}
+	request, _ := setupFindRequest(item)
+	response, _ := client.Do(request)
+	if response.StatusCode != http.StatusAccepted {
+		return fmt.Errorf("item %v was not found", item.Title)
+	}
+	return nil
+}
+
+func setupFindRequest(item todoItem) (*http.Request, error) {
+	_, requestBodyAsIOWriter := convertToJSONInIOWriter(item)
+	request, err := http.NewRequest(
 		"GET",
 		"http://localhost:8080/api/findItem",
 		requestBodyAsIOWriter)
 	request.Header.Set("Content-Type", "application/json")
-	response, err := client.Do(request)
-	if err != nil {log.Fatal(err)}
-	if response.StatusCode == http.StatusAccepted {
-		log.Fatal("The task 'new test item' was already present in the database, " +
-						"obviating the test to add it")
-	}
+	return request, err
+}
 
-	_, err = http.PostForm("http://localhost:8080/api/newItem", url.Values{"Title": {"new test item"}})
-	if err != nil {log.Fatal(err)}
-
-	response, err = client.Do(request)
-	if err != nil {log.Fatal(err)}
-	if response.StatusCode != http.StatusAccepted {
-		log.Fatal("Add item test was unsuccessful")
-	}
-
-	deleteRequestBodyAsIOWriter := bytes.NewBuffer(requestBodyAsJsonByteSlice)
-
+func setupDeleteRequest(item todoItem) (error, *http.Request) {
+	err, deleteRequestBodyAsIOWriter := convertToJSONInIOWriter(item)
 	deleteRequest, err := http.NewRequest(
 		"DELETE",
 		"http://localhost:8080/api/deleteItem",
 		deleteRequestBodyAsIOWriter)
 	deleteRequest.Header.Set("Content-Type", "application/json")
-	_, err = client.Do(deleteRequest)
-	if err != nil {log.Fatal(err)}
+	return err, deleteRequest
+}
 
-	response, err = client.Do(request)
-	if err != nil {log.Fatal(err)}
-	if response.StatusCode == http.StatusAccepted {
-		log.Fatal("Delete item test was unsuccessful")
+func convertToJSONInIOWriter(item todoItem) (error, *bytes.Buffer) {
+	requestBodyAsJsonByteSlice, err := json.Marshal(item)
+	deleteRequestBodyAsIOWriter := bytes.NewBuffer(requestBodyAsJsonByteSlice)
+	return err, deleteRequestBodyAsIOWriter
+}
+
+func printTodoList(t *testing.T) {
+	todoList := database.getTodoList()
+	fmt.Println("===========Todo Items ============")
+	for _, item := range todoList {
+		fmt.Println(item.Title)
 	}
-}
-
-func TestAddItem(t *testing.T) {
-	if testing.Short() {t.Skip()}
-	_, err := http.PostForm("http://localhost:8080/api/newItem", url.Values{"Title": {"new test item"}})
-	if err != nil {log.Fatal(err)}
-}
-
-func TestDeleteItem(t *testing.T) {
-	if testing.Short() {t.Skip()}
-	client := http.Client{}
-
-	item := todoItem{"new test item"}
-	jsonReq, err := json.Marshal(item)
-	//fmt.Printf( "%s\n", jsonReq)
-
-	bytesReq := bytes.NewBuffer(jsonReq)
-	request, err :=  http.NewRequest(
-		"DELETE",
-		"http://localhost:8080/api/deleteItem",
-		bytesReq)
-	request.Header.Set("Content-Type", "application/json")
-	_, err = client.Do(request)
-	if err != nil {log.Fatal(err)}
+	fmt.Println("===========End list===============")
 }
