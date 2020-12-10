@@ -20,6 +20,8 @@
 password.txt
 .eslintcache
 .idea
+testbackend
+testfrontend
 
 npm-debug.log*
 yarn-debug.log*

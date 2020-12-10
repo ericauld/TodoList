@@ -27,8 +27,8 @@ func (databaseConnection *DatabaseConnection) ping() error {
 	return databaseConnection.db.Ping()
 }
 
-func (databaseConnection *DatabaseConnection) findItem(itemTitle string) error {
-	nMatchingItems, err := databaseConnection.countItemsWhoseTitleIs(itemTitle)
+func (databaseConnection *DatabaseConnection) findItem(item todoItem) error {
+	nMatchingItems, err := databaseConnection.countItemsWhoseTitleIs(item.Title)
 	if err != nil {return err}
 
 	if nMatchingItems == 0 {
@@ -46,12 +46,12 @@ func (databaseConnection *DatabaseConnection) addItem(item todoItem) error {
 	return err
 }
 
-func (databaseConnection *DatabaseConnection) deleteItem(itemTitle string) error {
+func (databaseConnection *DatabaseConnection) deleteItem(item todoItem) error {
 	SQLQuery, err := databaseConnection.db.Prepare(
 		"DELETE FROM tasks WHERE title=?;")
 	defer SQLQuery.Close()
 	if err != nil {return err}
-	_, err = SQLQuery.Exec(itemTitle)
+	_, err = SQLQuery.Exec(item.Title)
 	return err
 }
 

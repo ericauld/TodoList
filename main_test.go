@@ -23,20 +23,20 @@ func AddAndDeleteOneItem(t *testing.T) {
 	itemTitle := "dummy test item"
 	item := todoItem{Title: itemTitle}
 
-	err := database.findItem(itemTitle)
+	err := database.findItem(item)
 	if err == nil {t.Error("item ", itemTitle, "was already in database," +
 		"obviating the test to add it to the database")}
 
 	err = database.addItem(item)
 	if err != nil {t.Error(err)}
 
-	err = database.findItem(itemTitle)
+	err = database.findItem(item)
 	if err != nil {t.Error(err)}
 
-	err = database.deleteItem(itemTitle)
+	err = database.deleteItem(item)
 	if err != nil {t.Error(err)}
 
-	err = database.findItem(itemTitle)
+	err = database.findItem(item)
 	if err == nil {t.Error("item with title", itemTitle, "was still in the database " +
 		"when it should have been deleted")}
 }
@@ -96,8 +96,7 @@ func findItemViaAPICall(item todoItem) error {
 }
 
 func setupFindRequest(item todoItem) (*http.Request, error) {
-	requestBodyAsJsonByteSlice, _ := json.Marshal(item)
-	requestBodyAsIOWriter := bytes.NewBuffer(requestBodyAsJsonByteSlice)
+	_, requestBodyAsIOWriter := convertToJSONInIOWriter(item)
 	request, err := http.NewRequest(
 		"GET",
 		"http://localhost:8080/api/findItem",

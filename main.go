@@ -32,11 +32,7 @@ func deleteItemHandler(writer http.ResponseWriter, request *http.Request) {
 	b, _ := ioutil.ReadAll(request.Body)
 	var item todoItem
 	json.Unmarshal(b, &item)
-
-	SQLQuery, err := database.db.Prepare("DELETE FROM tasks WHERE title=?")
-	defer SQLQuery.Close()
-	if err != nil {log.Fatal(err)}
-	SQLQuery.Exec(item.Title)
+	database.deleteItem(item)
 }
 
 func findItemHandler(writer http.ResponseWriter, request *http.Request) {
@@ -44,14 +40,9 @@ func findItemHandler(writer http.ResponseWriter, request *http.Request) {
 	var item todoItem
 	json.Unmarshal(b, &item)
 
-	SQLQuery, err := database.db.Prepare("SELECT COUNT(*) FROM tasks WHERE title=?")
-	defer SQLQuery.Close()
-	if err != nil {log.Fatal(err)}
-	var nMatchingRows int
-	row := SQLQuery.QueryRow(item.Title)
-	row.Scan(&nMatchingRows)
+	err := database.findItem(item)
 
-	if nMatchingRows == 0 {
+	if err != nil {
 		writer.WriteHeader(http.StatusNotFound)
 	} else {
 		writer.WriteHeader(http.StatusAccepted)
