@@ -1,9 +1,7 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
-	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"io/ioutil"
 	"log"
@@ -14,8 +12,6 @@ type todoItem struct {
 	Title string
 }
 
-var db *sql.DB
-
 var (
 	database *DatabaseConnection
 )
@@ -24,7 +20,7 @@ func getTodoListHandler(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Content-Type", "application/json")
 
 	SQLQuery := "SELECT title FROM tasks;"
-	rows, err := db.Query(SQLQuery)
+	rows, err := database.db.Query(SQLQuery)
 	if err != nil {log.Fatal(err)}
 	defer rows.Close()
 
@@ -43,7 +39,8 @@ func addItemHandler(writer http.ResponseWriter, request *http.Request) {
 	var item todoItem
 	item.Title = request.FormValue("Title")
 
-	SQLQuery, err := db.Prepare("INSERT INTO tasks(title) VALUES(?);")
+	SQLQuery, err := database.db.Prepare("INSERT INTO tasks(title) VALUES(?);")
+	defer SQLQuery.Close()
 	if err != nil {log.Fatal(err)}
 	SQLQuery.Exec(item.Title)
 }
@@ -53,7 +50,8 @@ func deleteItemHandler(writer http.ResponseWriter, request *http.Request) {
 	var item todoItem
 	json.Unmarshal(b, &item)
 
-	SQLQuery, err := db.Prepare("DELETE FROM tasks WHERE title=?")
+	SQLQuery, err := database.db.Prepare("DELETE FROM tasks WHERE title=?")
+	defer SQLQuery.Close()
 	if err != nil {log.Fatal(err)}
 	SQLQuery.Exec(item.Title)
 }
@@ -63,7 +61,8 @@ func findItemHandler(writer http.ResponseWriter, request *http.Request) {
 	var item todoItem
 	json.Unmarshal(b, &item)
 
-	SQLQuery, err := db.Prepare("SELECT COUNT(*) FROM tasks WHERE title=?")
+	SQLQuery, err := database.db.Prepare("SELECT COUNT(*) FROM tasks WHERE title=?")
+	defer SQLQuery.Close()
 	if err != nil {log.Fatal(err)}
 	var nMatchingRows int
 	row := SQLQuery.QueryRow(item.Title)
@@ -77,18 +76,12 @@ func findItemHandler(writer http.ResponseWriter, request *http.Request) {
 }
 
 func main() {
-	password, err := ioutil.ReadFile("./password.txt")
-	if err != nil {log.Fatal(err)}
-
-	db, err = sql.Open("mysql",
-						fmt.Sprintf("root:%s@tcp(127.0.0.1:3306)/TodoList", password))
-	if err != nil {log.Fatal(err)}
-	defer db.Close()
+	database = newDatabaseConnection()
 
 	http.HandleFunc("/api/todos", getTodoListHandler)
 	http.HandleFunc("/api/newItem", addItemHandler)
 	http.HandleFunc("/api/deleteItem", deleteItemHandler)
 	http.HandleFunc("/api/findItem", findItemHandler)
-	err = http.ListenAndServe(":8080", nil)
+	err := http.ListenAndServe(":8080", nil)
 	if err != nil {log.Fatal(err)}
 }
