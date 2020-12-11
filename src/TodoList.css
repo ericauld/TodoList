@@ -2,6 +2,20 @@
   text-align: center;
 }
 
+ul.taskList {
+	padding: 0 25px;
+}
+
+.main {
+  color: rgb(20, 15, 15);
+	font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif
+}
+
+.deleteTaskButton {
+  color: blue;
+  background-color: darkgoldenrod;
+}
+
 .App-logo {
   height: 40vmin;
   pointer-events: none;
