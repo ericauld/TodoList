@@ -12,8 +12,9 @@ ul.taskList {
 }
 
 .deleteTaskButton {
+  float: right;
   color: blue;
-  background-color: darkgoldenrod;
+  background-color: antiquewhite;
 }
 
 .App-logo {

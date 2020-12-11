@@ -41,19 +41,22 @@ class TodoList extends React.Component {
     return (
       <div className="main">
         Todo list
-        <input
-          value={this.state.inputBox}
-          onChange={this.handleChange}
-          onKeyPress={this.createNewItem} />
+        <div>
+          <input
+            value={this.state.inputBox}
+            onChange={this.handleChange}
+            onKeyPress={this.createNewItem} 
+            placeholder="Enter a new task"/>
+        </div> 
         <ul className="taskList">
           {this.state.items.map(item => (
             <li>
               {item.Title}
-              <button 
+              <span 
               className="deleteTaskButton" 
               onClick={(e) => this.deleteItem(item.Title)}>
                 Delete
-              </button>
+              </span>
             </li>
           ))}
         </ul>
