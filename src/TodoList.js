@@ -48,18 +48,20 @@ class TodoList extends React.Component {
             onKeyPress={this.createNewItem} 
             placeholder="Enter a new task"/>
         </div> 
-        <ul className="taskList">
-          {this.state.items.map(item => (
-            <li>
-              {item.Title}
-              <span 
-              className="deleteTaskButton" 
-              onClick={(e) => this.deleteItem(item.Title)}>
-                Delete
-              </span>
-            </li>
-          ))}
-        </ul>
+        <div className="listWrapper">
+          <ul className="taskList">
+            {this.state.items.map(item => (
+              <li className="task">
+                {item.Title}
+                <span 
+                className="deleteTaskButton" 
+                onClick={(e) => this.deleteItem(item.Title)}>
+                  x
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     );
   }
