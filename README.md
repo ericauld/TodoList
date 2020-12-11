@@ -1,70 +1,35 @@
-# Getting Started with Create React App
+# Todo List
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A simple todo list implemented with React, MySQL, and a Go backend. This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+## Requirements
 
-In the project directory, you can run:
+### React
 
-### `yarn start`
+First, you need to [install](https://classic.yarnpkg.com/en/docs/install/#mac-stable) Yarn package manager. Then you can navigate to the project directory in the terminal, and run the command `yarn install`. It should create a folder `<project-directory>/node_modules`, where the necessary packages are installed. There is a `yarn.lock` file in the repository, which instructs Yarn which packages are necessary.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### Go
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+To run the server, you should [have Go installed](http://golang.org/doc/install.html) on your machine. You should also have the [Go MySQL driver](https://github.com/go-sql-driver/mysql) installed.  
 
-### `yarn test`
+### MySQL
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Currently the app is set up to run off a MySQL database hosted on your local machine. Therefore, you should create a database to hold your todo items. Currently the only requirement of the database is that is has a table called `tasks` which has a field called `title`, which is a `VARCHAR(255)`.
 
-### `yarn build`
+Running the command
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+    go run <project-dir>/main.go <project-dir>/database.go
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+will log you into your database and start the server. You may care to look at the function `database.go::getLoginString`, where the login string is formatted. There you will see that the username is currently set to `root`, the port is set to `3306`, and the database title is set to `TodoList`. All of these are adjustable, of course. The password for the database is read in from a file called `password.txt`, which you should create in the project directory. It should have nothing but the password in it (and no newline afterward). It has already been placed in `.gitignore` for you.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Operation
 
-### `yarn eject`
+In the project directory, you can run 
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+    go run main.go database.go
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+to start the server. Then, in a separate terminal process, simply type 
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+    yarn start
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This will start up the frontend and automatically open the site in a new browser window. Currently the backend operates on port `8080` and the frontend on port `3000`. So the site will be hosted on `localhost:3000`.
