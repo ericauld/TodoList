@@ -2,37 +2,45 @@
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+ul.taskList {
+	padding: 0 25px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.main {
+  color: rgb(20, 15, 15);
+  font-size: large;
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  padding: 0 25px;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.listWrapper {
+	position: absolute;
+	/* bottom: 50px;
+	top: 160px; */
+	right: 0;
+	left: 0;
+	overflow: auto;
 }
 
-.App-link {
-  color: #61dafb;
+li.task:hover .deleteTaskButton {
+	visibility: visible;
+  opacity: 1;
+  color: red;
+  cursor: pointer;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.deleteTaskButton {
+  float: inline-start;
+  color: blue;
+  background-color: white;
+  border: 10px solid white;
+  visibility: hidden;
+}
+
+li.task {
+	list-style-type: none;
+	font-family: Tahoma;
+  font-size: medium;
+	padding: 5px 0;
+	/* border-bottom: .5px solid #ccc; */
 }

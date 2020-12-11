@@ -15,10 +15,18 @@ class TodoList extends React.Component {
       var formData = new FormData()
       formData.append('Title', this.state.inputBox)
       fetch("/api/newItem", { method: "POST", body: formData })
+      if (this.state.items){
       this.setState((state, props) => ({
         items: [...state.items, {Title: this.state.inputBox}],
         inputBox: ''
       }))
+    }
+    else {
+      this.setState((state, props) => ({
+        items: [{Title: this.state.inputBox}],
+        inputBox: ''
+      }))
+    }
     }
   }
 
@@ -39,23 +47,37 @@ class TodoList extends React.Component {
 
   render() {
     return (
-      <div>
-        <input
-          value={this.state.inputBox}
-          onChange={this.handleChange}
-          onKeyPress={this.createNewItem} />
-        <ul>
-          {this.state.items.map(item => (
-            <li>
-              {item.Title}
-              <button onClick={(e) => this.deleteItem(item.Title)}>
-                Delete
-              </button>
-            </li>
-          ))}
-        </ul>
+      <div className="main">
+        Todo list
+        <div>
+          <input
+            value={this.state.inputBox}
+            onChange={this.handleChange}
+            onKeyPress={this.createNewItem} 
+            placeholder="Enter a new task"/>
+        </div> 
+        <div className="listWrapper">
+          <ul className="taskList">
+            {this.renderItems()}
+          </ul>
+        </div>
       </div>
     );
+  }
+
+  renderItems() {
+    if (this.state.items) {
+    return this.state.items.map(item => (
+      <li className="task">
+        {item.Title}
+        <span
+          className="deleteTaskButton"
+          onClick={(e) => this.deleteItem(item.Title)}>
+                    x
+        </span>
+      </li>
+    ));
+    }
   }
 
   componentDidMount() {
