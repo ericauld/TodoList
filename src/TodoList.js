@@ -15,10 +15,18 @@ class TodoList extends React.Component {
       var formData = new FormData()
       formData.append('Title', this.state.inputBox)
       fetch("/api/newItem", { method: "POST", body: formData })
+      if (this.state.items){
       this.setState((state, props) => ({
         items: [...state.items, {Title: this.state.inputBox}],
         inputBox: ''
       }))
+    }
+    else {
+      this.setState((state, props) => ({
+        items: [{Title: this.state.inputBox}],
+        inputBox: ''
+      }))
+    }
     }
   }
 
@@ -50,20 +58,26 @@ class TodoList extends React.Component {
         </div> 
         <div className="listWrapper">
           <ul className="taskList">
-            {this.state.items.map(item => (
-              <li className="task">
-                {item.Title}
-                <span 
-                className="deleteTaskButton" 
-                onClick={(e) => this.deleteItem(item.Title)}>
-                  x
-                </span>
-              </li>
-            ))}
+            {this.renderItems()}
           </ul>
         </div>
       </div>
     );
+  }
+
+  renderItems() {
+    if (this.state.items) {
+    return this.state.items.map(item => (
+      <li className="task">
+        {item.Title}
+        <span
+          className="deleteTaskButton"
+          onClick={(e) => this.deleteItem(item.Title)}>
+                    x
+        </span>
+      </li>
+    ));
+    }
   }
 
   componentDidMount() {
