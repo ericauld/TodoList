@@ -24,7 +24,7 @@ func AddAndDeleteOneItem(t *testing.T) {
 	item := todoItem{Title: itemTitle}
 
 	err := database.findItem(item)
-	if err == nil {t.Errorf("item with title %v was already in database," +
+	if err == nil {t.Errorf("item with title \"%v\" was already in database," +
 		"obviating the test to add it to the database", itemTitle)}
 
 	err = database.addItem(item)
@@ -37,7 +37,7 @@ func AddAndDeleteOneItem(t *testing.T) {
 	if err != nil {t.Error(err)}
 
 	err = database.findItem(item)
-	if err == nil {t.Errorf("item with title %v was still in the database " +
+	if err == nil {t.Errorf("item with title \"%v\" was still in the database " +
 		"when it should have been deleted", itemTitle)}
 }
 
@@ -47,16 +47,16 @@ func AddAndDeleteAnItemViaAPICalls(t *testing.T) {
 
 	err := findItemViaAPICall(item)
 	if err == nil {
-		t.Errorf("Task with title %v was already present in the database, "+
+		t.Errorf("Task with title \"%v\" was already present in the database, "+
 			"obviating the test to add it", item.Title)
 	}
 
-	err = insertItemViaAPICall(itemTitle, item)
+	err = insertItemViaAPICall(item)
 	if err != nil {t.Error(err)}
 
 	err = findItemViaAPICall(item)
 	if err != nil {
-		t.Error("Item", item.Title, "was not found after it was added")
+		t.Errorf("Item with title \"%v\" was not found after it was added", item.Title)
 	}
 
 	err = deleteItemViaAPICall(item)
@@ -64,8 +64,8 @@ func AddAndDeleteAnItemViaAPICalls(t *testing.T) {
 
 	err = findItemViaAPICall(item)
 	if err == nil {
-		t.Error("Item", item.Title, "was still in the database " +
-			"when the test should have deleted it")
+		t.Errorf("item with title \"%v\" was still in the database " +
+			"when the test should have deleted it", item.Title)
 	}
 }
 
@@ -77,10 +77,10 @@ func deleteItemViaAPICall(item todoItem) error {
 }
 
 
-func insertItemViaAPICall(itemTitle string, item todoItem) error {
+func insertItemViaAPICall(item todoItem) error {
 	_, err := http.PostForm(
 		"http://localhost:8080/api/newItem",
-		url.Values{"Title": {itemTitle}})
+		url.Values{"Title": {item.Title}})
 	if err != nil {return err}
 	return err
 }
