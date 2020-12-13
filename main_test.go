@@ -20,12 +20,12 @@ func TestHandlersViaAPICalls(t *testing.T) {
 }
 
 func AddAndDeleteOneItem(t *testing.T) {
-	itemTitle := "dummy test item"
+	const itemTitle = "dummy test item"
 	item := todoItem{Title: itemTitle}
 
 	err := database.findItem(item)
-	if err == nil {t.Error("item ", itemTitle, "was already in database," +
-		"obviating the test to add it to the database")}
+	if err == nil {t.Errorf("item with title %v was already in database," +
+		"obviating the test to add it to the database", itemTitle)}
 
 	err = database.addItem(item)
 	if err != nil {t.Error(err)}
@@ -37,8 +37,8 @@ func AddAndDeleteOneItem(t *testing.T) {
 	if err != nil {t.Error(err)}
 
 	err = database.findItem(item)
-	if err == nil {t.Error("item with title", itemTitle, "was still in the database " +
-		"when it should have been deleted")}
+	if err == nil {t.Errorf("item with title %v was still in the database " +
+		"when it should have been deleted", itemTitle)}
 }
 
 func AddAndDeleteAnItemViaAPICalls(t *testing.T) {
