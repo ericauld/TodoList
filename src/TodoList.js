@@ -5,6 +5,7 @@ class TodoList extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      error: false,
       items: [],
       inputBox: ''
     };
@@ -46,6 +47,9 @@ class TodoList extends React.Component {
   handleChange = (e) => { this.setState({ inputBox: e.target.value }); }
 
   render() {
+    if (this.state.error) {
+      return (<div>Hey, an error!</div>)
+    } else
     return (
       <div className="main">
         Todo list
@@ -84,6 +88,7 @@ class TodoList extends React.Component {
     fetch("/api/todos")
       .then(res => res.json())
       .then((result) => { this.setState({ items: result }); })
+      .catch(() => {this.setState({error: true});})
   }
 }
 
