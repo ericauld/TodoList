@@ -48,26 +48,29 @@ class TodoList extends React.Component {
   handleChange = (e) => { this.setState({ inputBox: e.target.value }); }
 
   render() {
-    if (this.state.error) {
-      return (this.renderErrorScreen())
-    } else
-      return (
-        <div className="main">
-          {this.renderTitleAndTextBox()}
-          <div className="listWrapper">
-            <ul className="taskList">
-              {this.renderItems()}
-            </ul>
-          </div>
+    return (
+      <div className="main">
+        {this.renderTitleAndTextBox()}
+        <div className="listWrapper">
+          <ul className="taskList">
+            {(() => {
+              if (this.state.error)
+                return this.showErrorMessage()
+              else
+                return this.renderItems()
+            }
+            )()}
+          </ul>
         </div>
-      );
+      </div>
+    );
   }
 
-  renderErrorScreen() {
+  showErrorMessage() {
     return (
       <div>
-        {this.renderTitleAndTextBox()}
-        <div>Hey, an error!</div>
+        There's been an error loading the page. The error message
+        says, "{this.state.error.message}"
       </div>
     );
   }
@@ -104,7 +107,13 @@ class TodoList extends React.Component {
 
   componentDidMount() {
     fetch("/api/todos")
-      .then(res => res.json())
+      .then(res => {
+        if (res.ok)
+          return res.json()
+        else
+          throw new Error("The API call to get the todos list returned" 
+          + " with a response that was not OK.")
+      })
       .then((result) => { this.setState({ items: result }); })
       .catch((err) => { this.setState({ error: err }); })
   }
