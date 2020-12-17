@@ -5,7 +5,7 @@ class TodoList extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      error: false,
+      error: null,
       items: [],
       inputBox: ''
     };
@@ -16,31 +16,32 @@ class TodoList extends React.Component {
       var formData = new FormData()
       formData.append('Title', this.state.inputBox)
       fetch("/api/newItem", { method: "POST", body: formData })
-      if (this.state.items){
-      this.setState((state, props) => ({
-        items: [...state.items, {Title: this.state.inputBox}],
-        inputBox: ''
-      }))
-    }
-    else {
-      this.setState((state, props) => ({
-        items: [{Title: this.state.inputBox}],
-        inputBox: ''
-      }))
-    }
+      if (this.state.items) {
+        this.setState((state, props) => ({
+          items: [...state.items, { Title: this.state.inputBox }],
+          inputBox: ''
+        }))
+      }
+      else {
+        this.setState((state, props) => ({
+          items: [{ Title: this.state.inputBox }],
+          inputBox: ''
+        }))
+      }
     }
   }
 
   deleteItem = (title) => {
     fetch("/api/deleteItem", {
-      method: "DELETE", 
-      headers: {'Content-Type': 'application/json; charset=UTF-8'}, 
-      body: JSON.stringify({Title: title})})
+      method: "DELETE",
+      headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+      body: JSON.stringify({ Title: title })
+    })
     var arr = [...this.state.items]
     var index = this.state.items.findIndex(x => x.Title === title)
     if (index !== -1) {
       arr.splice(index, 1)
-      this.setState({items: arr})
+      this.setState({ items: arr })
     }
   }
 
@@ -48,22 +49,39 @@ class TodoList extends React.Component {
 
   render() {
     if (this.state.error) {
-      return (<div>Hey, an error!</div>)
+      return (this.renderErrorScreen())
     } else
+      return (
+        <div className="main">
+          {this.renderTitleAndTextBox()}
+          <div className="listWrapper">
+            <ul className="taskList">
+              {this.renderItems()}
+            </ul>
+          </div>
+        </div>
+      );
+  }
+
+  renderErrorScreen() {
     return (
-      <div className="main">
+      <div>
+        {this.renderTitleAndTextBox()}
+        <div>Hey, an error!</div>
+      </div>
+    );
+  }
+
+  renderTitleAndTextBox() {
+    return (
+      <div>
         Todo list
         <div>
           <input
             value={this.state.inputBox}
             onChange={this.handleChange}
-            onKeyPress={this.createNewItem} 
-            placeholder="Enter a new task"/>
-        </div> 
-        <div className="listWrapper">
-          <ul className="taskList">
-            {this.renderItems()}
-          </ul>
+            onKeyPress={this.createNewItem}
+            placeholder="Enter a new task" />
         </div>
       </div>
     );
@@ -71,16 +89,16 @@ class TodoList extends React.Component {
 
   renderItems() {
     if (this.state.items) {
-    return this.state.items.map(item => (
-      <li className="task">
-        {item.Title}
-        <span
-          className="deleteTaskButton"
-          onClick={(e) => this.deleteItem(item.Title)}>
-                    x
+      return this.state.items.map(item => (
+        <li className="task">
+          {item.Title}
+          <span
+            className="deleteTaskButton"
+            onClick={(e) => this.deleteItem(item.Title)}>
+            x
         </span>
-      </li>
-    ));
+        </li>
+      ));
     }
   }
 
@@ -88,7 +106,7 @@ class TodoList extends React.Component {
     fetch("/api/todos")
       .then(res => res.json())
       .then((result) => { this.setState({ items: result }); })
-      .catch(() => {this.setState({error: true});})
+      .catch((err) => { this.setState({ error: err }); })
   }
 }
 
