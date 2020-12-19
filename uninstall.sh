@@ -17,3 +17,4 @@ uninstall_go() {
 
 uninstall_mysql
 uninstall_go
+sudo rm -fr TodoList

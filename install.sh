@@ -6,12 +6,12 @@ testIfInstalledAndPromptForInstallation() {
         while true; do
             read -p "$command_name was not found. Would you like to install it? [y/N]" yn
             case $yn in
-                [Yy]*)
-                    echo "Here I go! I'm installing some shit"
-                    break
+            [Yy]*)
+                echo "Here I go! I'm installing some shit"
+                break
                 ;;
-                [Nn]*) return ;;
-                *) return ;;
+            [Nn]*) return ;;
+            *) return ;;
             esac
         done
     else
@@ -50,7 +50,7 @@ install_mysql() {
     if shellKnowsTheCommand apt-get; then
         apt-get update
         apt-get install mysql-shell
-        elif shellKnowsTheCommand wget; then
+    elif shellKnowsTheCommand wget; then
         sudo wget https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
         sudo yum localinstall mysql57-community-release-el7-11.noarch.rpm
         sudo yum install mysql-community-server
@@ -58,18 +58,32 @@ install_mysql() {
     else
         echo Hi
     fi
+
+    
 }
 
 install_go() {
+    echo install_go was called
     if shellKnowsTheCommand wget; then
         sudo wget https://golang.org/dl/go1.15.6.linux-amd64.tar.gz
         sudo tar -C /usr/local -xzf go1.15.6.linux-amd64.tar.gz
-        sudo export PATH=$PATH:/usr/local/go/bin
-        sudo source $HOME/.profile.
-        echo go installed with version $(go version)
+        sudo echo 'export PATH=/usr/local/go/bin:$PATH' >> ~/.bash_profile
+        source ~/.bash_profile
+        if shellKnowsTheCommand go; then
+            echo go installed with version $(go version)
+        else
+            echo There was a problem installing go
+            exit
+        fi
     else
         echo "Could not install go because wget wasn't recognized"
     fi
+}
+
+install_git() {
+    echo "Install git was called."
+    sudo yum update -y
+    sudo yum install git -y
 }
 
 shellKnowsTheCommand() {
@@ -81,39 +95,64 @@ main() {
     # testIfInstalledAndPromptForInstallation yarn
     # testIfInstalledAndPromptForInstallation mysql
     # testIfInstalledAndPromptForInstallation go
+
+    sudo yum groupinstall "Development Tools"
+
     command_name=mysql
     if ! shellKnowsTheCommand $command_name; then
         while true; do
             read -p "$command_name was not found. Would you like to install it? [y/N]" yn
             case $yn in
-                [Yy]*)
-                    install_mysql
-                    break
+            [Yy]*)
+                install_mysql
+                break
                 ;;
-                [Nn]*) exit ;;
-                *) exit ;;
+            [Nn]*) exit ;;
+            *) exit ;;
             esac
         done
     else
         echo I found $command_name on the system.
     fi
-    
+
     command_name=go
     if ! shellKnowsTheCommand $command_name; then
         while true; do
             read -p "$command_name was not found. Would you like to install it? [y/N]" yn
             case $yn in
-                [Yy]*)
-                    install_go
-                    break
+            [Yy]*)
+                install_go
+                break
                 ;;
-                [Nn]*) exit ;;
-                *) exit ;;
+            [Nn]*) exit ;;
+            *) exit ;;
             esac
         done
     else
         echo I found $command_name on the system.
     fi
-    
+
+    command_name=git
+    if ! shellKnowsTheCommand $command_name; then
+        while true; do
+            read -p "$command_name was not found. Would you like to install it? [y/N]" yn
+            case $yn in
+            [Yy]*)
+                install_git
+                break
+                ;;
+            [Nn]*) exit ;;
+            *) exit ;;
+            esac
+        done
+    else
+        echo I found $command_name on the system.
+    fi
+
+    mkdir -p ~/go/src/github.com/ericauld ; cd ~/go/src/github.com/ericauld
+    git clone https://github.com/ericauld/TodoList.git
+    cd ~/go/src/github.com/ericauld/TodoList/
+
+    go get -u github.com/go-sql-driver/mysql
 }
 main
