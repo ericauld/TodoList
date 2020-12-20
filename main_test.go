@@ -122,6 +122,7 @@ func convertToJSONInIOWriter(item todoItem) (error, *bytes.Buffer) {
 }
 
 func printTodoList(t *testing.T) {
+	fmt.Println("Got to just before calling database.getTodoList")
 	todoList := database.getTodoList()
 	fmt.Println("===========Todo Items ============")
 	for _, item := range todoList {

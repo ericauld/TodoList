@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"strings"
 )
 
 type DatabaseConnection struct {
@@ -14,8 +15,15 @@ type DatabaseConnection struct {
 
 func newDatabaseConnection() *DatabaseConnection {
 	loginInfo := getLoginString()
+	fmt.Println("Login string was " + loginInfo)
+	fmt.Println("Got to just before opening db")
 	db, err := sql.Open("mysql", loginInfo)
+	fmt.Println("Got to just after opening db")
+	err2 := db.Ping()
 	if err != nil {log.Fatal(err)}
+	fmt.Println("Err1 was nil")
+	if err2 != nil {log.Fatal(err2)}
+	fmt.Println("Err2 was nil")
 	return &DatabaseConnection{db}
 }
 
@@ -70,8 +78,11 @@ func (databaseConnection *DatabaseConnection) countItemsWhoseTitleIs(itemTitle s
 
 func (databaseConnection *DatabaseConnection) getTodoList() []todoItem {
 	SQLQuery := "SELECT title FROM tasks;"
+	fmt.Println("Got to just before calling query")
 	rows, err := databaseConnection.db.Query(SQLQuery)
+	fmt.Println("Got to just after calling query")
 	if err != nil {log.Fatal(err)}
+	fmt.Println("Got to line after log fatal err")
 	defer rows.Close()
 
 	var todoItems []todoItem
@@ -89,10 +100,15 @@ func getLoginString() string {
 	port := 3306
 	databaseName := "TodoList"
 	IPAddress := "127.0.0.1"
-	password, err := ioutil.ReadFile("password.txt")
+	passwordAsByteSlice, err := ioutil.ReadFile("password.txt")
+	password := string(passwordAsByteSlice)
+	fmt.Println(password)
+	password = strings.TrimSuffix(password, "\n")
+	fmt.Println(password)
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Printf("%v%v", password, password)
 
 	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", username, password, IPAddress, port, databaseName)
 }
