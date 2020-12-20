@@ -55,11 +55,28 @@ install_mysql() {
         sudo yum localinstall mysql57-community-release-el7-11.noarch.rpm
         sudo yum install mysql-community-server
         sudo systemctl start mysqld.service
+
     else
         echo Hi
     fi
 
-    
+    password="MyNewPass4%"
+    temp_password=$(sudo grep 'temporary password' /var/log/mysqld.log | awk '{print $NF}')  
+    mysqladmin --user=root --password="$temp_password" password "$password";
+    mysql -uroot -p"$password" -e "CREATE DATABASE TodoList;"
+    mysql -uroot -p"$password" -e "USE TodoList; CREATE TABLE IF NOT EXISTS tasks (
+    task_id INT AUTO_INCREMENT,
+    title VARCHAR(255) NOT NULL,
+    start_date DATE,
+    due_date DATE,
+    priority TINYINT NOT NULL DEFAULT 3,
+    description TEXT,
+    PRIMARY KEY (task_id));"
+    mysql -uroot -p"$password" -e "USE TodoList; INSERT INTO tasks(title,priority)
+VALUES('Learn MySQL INSERT Statement',1);"
+
+
+
 }
 
 install_go() {
@@ -154,5 +171,6 @@ main() {
     cd ~/go/src/github.com/ericauld/TodoList/
 
     go get -u github.com/go-sql-driver/mysql
+    yarn install
 }
 main
