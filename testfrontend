@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Automate the frontend testing
+
+PORT_NUMBER=8080
+killport() {lsof -i tcp:${PORT_NUMBER} | awk 'NR!=1 {print $2}' | xargs kill}
+
+go run main.go database.go &
+sleep .2
+trap killport INT
+yarn start

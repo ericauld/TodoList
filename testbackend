@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Automate backend testing
+
+PORT_NUMBER=8080
+go test -run TestHandlers$
+go run main.go database.go & 
+sleep .2
+go test -run TestHandlersViaAPICalls
+lsof -i tcp:${PORT_NUMBER} | awk 'NR!=1 {print $2}' | xargs kill
