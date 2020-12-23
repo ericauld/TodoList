@@ -15,17 +15,19 @@ install_mysql() {
         sudo yum localinstall mysql57-community-release-el7-11.noarch.rpm
         sudo yum install mysql-community-server
         sudo systemctl start mysqld.service
+        sudo rm mysql57-community-release-el7-11.noarch.rpm
     else
-        echo Hi
+        echo "Installation of mysql could not proceed, because neither \
+\"apt-get\" nor \"wget\" commands were recognized."
     fi
 
-    echo "MySQL requires the creation of a password. This password must \n\
+    echo -e "MySQL requires the creation of a password. This password must \n\
     --contain at least 1 numeric character\n\
     --contain at least 1 lowercase character\n\
     --contain at least 1 uppercase character\n\
     --contain at least 1 special (nonalphanumeric) character.\n\
-    This password willl be stored in a file \"password.txt\" which\
-    is already added to .gitignore."
+    This password willl be stored in a file \"password.txt\" which \
+is already added to .gitignore."
     echo -n "Please enter a password for your MySQL database:"
     IFS= read -s password
 
@@ -62,6 +64,7 @@ install_go() {
             echo There was a problem installing go
             exit
         fi
+        rm go1.15.6.linux-amd64.tar.gz
     else
         echo "Could not install go because the \"wget\" package was not available"
     fi
