@@ -26,7 +26,7 @@ install_mysql() {
     --contain at least 1 lowercase character\n\
     --contain at least 1 uppercase character\n\
     --contain at least 1 special (nonalphanumeric) character.\n\
-    This password willl be stored in a file \"password.txt\" which \
+    This password will be stored in a file \"password.txt\" which \
 is already added to .gitignore."
     echo -n "Please enter a password for your MySQL database:"
     IFS= read -s password
