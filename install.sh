@@ -70,7 +70,7 @@ install_mysql() {
     sudo yum localinstall mysql57-community-release-el7-11.noarch.rpm
     sudo yum install mysql-community-server
     sudo systemctl start mysqld.service
-    sudo rm mysql57-community-release-el7-11.noarch.rpm
+    sudo rm -f mysql57-community-release-el7-11.noarch.rpm
 }
 
 install_go() {
