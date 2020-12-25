@@ -134,6 +134,7 @@ VALUES('Learn MySQL INSERT Statement',1);"
 }
 
 save_password_to_gitignored_file() {
+    local password=$1
     touch password.txt
     cat <<EOF >password.txt
 $password
