@@ -1,7 +1,7 @@
 #!/bin/bash
 
 main() {
-    local prerequisite_packages="git wget gcc yum"
+    local prerequisite_packages="wget gcc yum"
     check_for_prerequisites $prerequisite_packages
 
     local install_list="go node yarn mysql foo bar"
@@ -103,10 +103,10 @@ install_package() {
 }
 
 install_mysql() {
-    if shellKnowsTheCommand apt-get; then
+    if shell_knows_the_command apt-get; then
         apt-get update
         apt-get install mysql-shell
-    elif shellKnowsTheCommand wget; then
+    elif shell_knows_the_command wget; then
         sudo wget https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
         sudo yum localinstall mysql57-community-release-el7-11.noarch.rpm
         sudo yum install mysql-community-server
@@ -116,6 +116,8 @@ install_mysql() {
         echo "Installation of mysql could not proceed, because neither \
 \"apt-get\" nor \"wget\" commands were recognized."
     fi
+
+    temp_password=$(sudo grep 'temporary password' /var/log/mysqld.log | awk '{print $NF}')
 
     echo -e "MySQL requires the creation of a password. This password must \n\
     --contain at least 1 numeric character\n\
@@ -127,7 +129,6 @@ is already added to .gitignore."
     echo -n "Please enter a password for your MySQL database:"
     IFS= read -s password
 
-    temp_password=$(sudo grep 'temporary password' /var/log/mysqld.log | awk '{print $NF}')
     mysqladmin --user=root --password="$temp_password" password "$password"
     mysql -uroot -p"$password" -e "CREATE DATABASE TodoList;"
     mysql -uroot -p"$password" -e "USE TodoList; CREATE TABLE IF NOT EXISTS tasks (
@@ -149,12 +150,12 @@ EOF
 }
 
 install_go() {
-    if shellKnowsTheCommand wget; then
+    if shell_knows_the_command wget; then
         sudo wget https://golang.org/dl/go1.15.6.linux-amd64.tar.gz
         sudo tar -C /usr/local -xzf go1.15.6.linux-amd64.tar.gz
         sudo echo 'export PATH=/usr/local/go/bin:$PATH' >>~/.bash_profile
         source ~/.bash_profile
-        if shellKnowsTheCommand go; then
+        if shell_knows_the_command go; then
             echo $(go version) successfully installed
         else
             echo There was a problem installing go
