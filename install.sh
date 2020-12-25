@@ -37,7 +37,7 @@ setup_mysql_database() {
     local temp_password=$(get_temp_mysql_password)
     ask_user_to_type_in_a_password
     read -rs user_password
-    update_password $temp_password $user_password
+    update_mysql_password $temp_password $user_password
     create_database
 }
 
@@ -100,16 +100,16 @@ ask_user_to_type_in_a_password() {
     --contain at least 1 lowercase character\n\
     --contain at least 1 uppercase character\n\
     --contain at least 1 special (nonalphanumeric) character.\n\
-    This password will be stored in a file \"password.txt\" which \
-is already added to .gitignore."
+    After you type in your password you will be asked to type it once more\
+    in order to set up your login path."
     echo -n "Please enter a password for your MySQL database:"
 }
 
-update_password() {
+update_mysql_password() {
     local temp_password=$1
     local password=$2
     mysqladmin --user=root --password="$temp_password" password "$password"
-    echo $password | mysql_config_editor set --login-path=local --host=localhost --user=username --password
+    mysql_config_editor set --login-path=local --host=localhost --user=root --password
 }
 
 create_database() {
