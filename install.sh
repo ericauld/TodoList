@@ -38,7 +38,6 @@ setup_mysql_database() {
     ask_user_to_type_in_a_password
     read -rs user_password
     update_password $temp_password $user_password
-    save_password_to_gitignored_file $user_password
     create_database
 }
 
@@ -110,7 +109,7 @@ update_password() {
     local temp_password=$1
     local password=$2
     mysqladmin --user=root --password="$temp_password" password "$password"
-    $password | mysql_config_editor set --login-path=local --host=localhost --user=username --password
+    echo $password | mysql_config_editor set --login-path=local --host=localhost --user=username --password
 }
 
 create_database() {
