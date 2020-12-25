@@ -7,6 +7,9 @@ main() {
     local install_list="go node yarn mysql foo bar"
     install_if_missing $install_list
 
+    go get -u github.com/go-sql-driver/mysql
+    yarn install
+
     echo "Reached end of main"
 }
 
