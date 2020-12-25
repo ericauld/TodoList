@@ -84,10 +84,6 @@ install_go() {
     rm go1.15.6.linux-amd64.tar.gz
 }
 
-install_foo() {
-    echo "Installing foo..."
-}
-
 install_go_mysql_driver() {
     go get -u github.com/go-sql-driver/mysql
 }
