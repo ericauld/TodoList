@@ -4,7 +4,7 @@ main() {
     prerequisites="git yarn gcc node wget yum"
     make_sure_system_already_has $prerequisites
 
-    local packages="go mysql foo"
+    local packages="go mysql"
     install_packages $(missing $packages)
 
     install_drivers_and_dependencies
