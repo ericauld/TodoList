@@ -1,12 +1,17 @@
 package main
 
 import (
+	"bufio"
 	"database/sql"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"strings"
+	"syscall"
+
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 type DatabaseConnection struct {
@@ -14,7 +19,7 @@ type DatabaseConnection struct {
 }
 
 func newDatabaseConnection() *DatabaseConnection {
-	loginInfo := getLoginString()
+	loginInfo := getLoginString2()
 	db, err := sql.Open("mysql", loginInfo)
 	if err != nil {log.Fatal(err)}
 	return &DatabaseConnection{db}
@@ -85,6 +90,15 @@ func (databaseConnection *DatabaseConnection) getTodoList() []todoItem {
 	return todoItems
 }
 
+func getLoginString2() string {
+	port := 3306
+	databaseName := "TodoList"
+	IPAddress := "127.0.0.1"
+	username, password, _ := credentials()
+
+	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", username, password, IPAddress, port, databaseName)
+}
+
 func getLoginString() string {
 	username := "root"
 	port := 3306
@@ -100,3 +114,21 @@ func getLoginString() string {
 	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", username, password, IPAddress, port, databaseName)
 }
 
+func credentials() (string, string, error) {
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Print("Enter Username: ")
+	username, err := reader.ReadString('\n')
+	if err != nil {
+		return "", "", err
+	}
+
+	fmt.Print("Enter Password: ")
+	bytePassword, err := terminal.ReadPassword(int(syscall.Stdin))
+	if err != nil {
+		return "", "", err
+	}
+
+	password := string(bytePassword)
+	return strings.TrimSpace(username), strings.TrimSpace(password), nil
+}
