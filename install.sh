@@ -37,6 +37,7 @@ setup_mysql_database() {
     local temp_password=$(get_temp_mysql_password)
     ask_user_to_type_in_a_password
     read -rs user_password
+    save_password_to_gitignored_file $user_password
     update_mysql_password $temp_password $user_password
     create_database
 }
@@ -78,7 +79,7 @@ install_go() {
     sudo tar -C /usr/local -xzf go1.15.6.linux-amd64.tar.gz
     sudo echo 'export PATH=/usr/local/go/bin:$PATH' >>~/.bash_profile
     source ~/.bash_profile
-    rm go1.15.6.linux-amd64.tar.gz
+    sudo rm -f go1.15.6.linux-amd64.tar.gz
 }
 
 install_go_mysql_driver() {
@@ -100,8 +101,8 @@ ask_user_to_type_in_a_password() {
     --contain at least 1 lowercase character\n\
     --contain at least 1 uppercase character\n\
     --contain at least 1 special (nonalphanumeric) character.\n\
-    After you type in your password you will be asked to type it once more\
-    in order to set up your login path."
+After you type in your password you will be asked to type it once more\
+in order to set up your login path."
     echo -n "Please enter a password for your MySQL database:"
 }
 
