@@ -22,7 +22,7 @@ make_sure_system_already_has() {
 }
 
 install_packages() {
-    packages=$@
+    local packages=$@
     for pckg in $packages; do
         eval install_$pckg
     done 
