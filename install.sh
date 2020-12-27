@@ -43,7 +43,7 @@ os_specific_prerequisites_for() {
     if [ $users_os = "amazon_linux" ]; then
         echo "yum wget"
     elif [ $users_os = "mac" ]; then
-        echo "mac stuff"
+        echo "curl mac stuff"
     fi
 }
 
@@ -58,7 +58,7 @@ make_sure_system_already_has_prerequisites() {
 install_packages() {
     local packages=$@
     for pckg in $packages; do
-        eval install_$pckg
+        eval install_"$pckg"_"$users_os"
     done 
 }
 
@@ -115,7 +115,7 @@ tell_user_to_install() {
     done
 }
 
-install_mysql() {
+install_mysql_amazon_linux() {
     sudo wget https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
     sudo yum localinstall mysql57-community-release-el7-11.noarch.rpm
     sudo yum install mysql-community-server
@@ -123,12 +123,38 @@ install_mysql() {
     sudo rm -f mysql57-community-release-el7-11.noarch.rpm
 }
 
-install_go() {
+install_go_amazon_linux() {
     sudo wget https://golang.org/dl/go1.15.6.linux-amd64.tar.gz
     sudo tar -C /usr/local -xzf go1.15.6.linux-amd64.tar.gz
     sudo echo 'export PATH=/usr/local/go/bin:$PATH' >>~/.bash_profile
     source ~/.bash_profile
     sudo rm -f go1.15.6.linux-amd64.tar.gz
+}
+
+install_go_mac() {
+    curl -O "https://golang.org/dl/go1.15.6.darwin-amd64.pkg"
+    ./go1.15.6.darwin-amd64.pkg
+}
+
+install_mysql_mac() {
+    local name_of_download_file="mysql_installer"
+    local path_to_todolist="~/go/src/github.com/ericauld/TodoList"
+    curl -o $name_of_download_file "https://dev.mysql.com/downloads/file/?id=499570"
+    sudo groupadd mysql
+    sudo useradd -r -g mysql -s /bin/false mysql
+    cd /usr/local
+    sudo tar zxvf "$path_to_todolist"/"$name_of_download_file".tar.gz
+    sudo ln -s "$path_to_todolist"/"$name_of_download_file" mysql
+    cd mysql
+    sudo mkdir mysql-files
+    sudo chown mysql:mysql mysql-files
+    sudo chmod 750 mysql-files
+    sudo bin/mysqld --initialize --user=mysql
+    sudo bin/mysql_ssl_rsa_setup
+    #What's going on here?
+    sudo bin/mysqld_safe --user=mysql &
+    # Next command is optional
+    sudo cp support-files/mysql.server /etc/init.d/mysql.server
 }
 
 install_go_mysql_driver() {
