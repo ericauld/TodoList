@@ -1,19 +1,53 @@
 #!/bin/bash
 
 main() {
-    prerequisites="git yarn gcc node wget yum"
-    make_sure_system_already_has $prerequisites
+    users_os=$(get_users_os)
+    make_sure_script_supports_users_os
 
-    local packages="go mysql"
-    install_packages $(missing $packages)
+    prerequisites="git yarn gcc node "
+    prerequisites+=$(os_specific_prerequisites_for $users_os)
+    make_sure_system_already_has_prerequisites
+
+    local packages_to_install="go mysql"
+    install_packages $(missing $packages_to_install)
 
     install_drivers_and_dependencies
 
     setup_mysql_database
 }
 
-make_sure_system_already_has() {
-    local prerequisites=$@
+get_users_os() {
+    case $OSTYPE in
+    ( darwin* )
+        echo mac;;
+    ( linux* )
+        echo $(get_linux_distribution);;
+    ( * )
+        echo "unknown_os";;
+    esac
+}
+
+make_sure_script_supports_users_os() {
+    local supported_os_types="amazon_linux mac"
+    if isnt_a_member_of $users_os "$supported_os_types"; then
+        echo "The script couldn't discern your OS as being one of the \
+supported types. Currently supported are "
+        for os_type in $supported_os_types; do
+            echo $os_type
+        done
+    fi
+}
+
+os_specific_prerequisites_for() {
+    local users_os=$1
+    if [ $users_os = "amazon_linux" ]; then
+        echo "yum wget"
+    elif [ $users_os = "mac" ]; then
+        echo "mac stuff"
+    fi
+}
+
+make_sure_system_already_has_prerequisites() {
     local missing_prerequisites=$(missing $prerequisites)
     if [ ! -z "$missing_prerequisites" ]; then
         tell_user_to_install $missing_prerequisites
@@ -38,8 +72,23 @@ setup_mysql_database() {
     ask_user_to_type_in_a_password
     read -rs user_password
     save_password_to_gitignored_file $user_password
-    update_mysql_password $temp_password $user_password
+    setup_login_path $temp_password $user_password
     create_database
+}
+
+get_linux_distribution() {
+    local linux_distribution="$(grep '^NAME' /etc/os-release | sed 's/.*=//' | sed "s/^\(\"\)\(.*\)\1\$/\2/g")"
+    if [ "$linux_distribution" = "Amazon Linux" ]; then
+        echo amazon_linux
+    else 
+        echo unknown_linux_distribution
+    fi
+}
+
+isnt_a_member_of() {
+    local element=$1
+    local list=$2
+    [[ $list =~ (^|[[:space:]])$element($|[[:space:]]) ]] && return 1 || return 0
 }
 
 missing() {
@@ -56,7 +105,7 @@ missing() {
 
 tell_user_to_install() {
     local missing_packages=$@
-    echo "In order to install TodoList, the following must already be installed:"
+    echo "In order to install TodoList on $users_os, the following must already be installed:"
     for prerequisite in $prerequisites; do
         echo -e "   * "$prerequisite
     done
@@ -106,10 +155,10 @@ in order to set up your login path."
     echo -n "Please enter a password for your MySQL database:"
 }
 
-update_mysql_password() {
+setup_login_path() {
     local temp_password=$1
-    local password=$2
-    mysqladmin --user=root --password="$temp_password" password "$password"
+    local user_password=$2
+    mysqladmin --user=root --password="$temp_password" password "$user_password"
     mysql_config_editor set --login-path=local --host=localhost --user=root --password
 }
 
