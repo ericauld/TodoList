@@ -6,9 +6,9 @@ So far the app has only been tested on Amazon Linux. It is in the process of bei
 
 Before you install the app, you must have [Yarn](https://classic.yarnpkg.com/en/docs/install) and [Node](https://nodejs.org/en/download/package-manager). You may care to install Node with a package manager, as described [here](https://classic.yarnpkg.com/en/docs/install/#centos-stable) for Amazon Linux/Red Hat Linux. Also required for the app are gcc and git. 
 
-If you are on Amazon Linux, you must have `yum` and `wget` installed (but you probably already do).
+If you are on Amazon Linux, you must also have `yum` and `wget` installed (but you probably already do).
 
-If you use MacOS you will need `curl` in order to install. 
+If you use MacOS you will need `curl`. 
 
 ## Installation
 
@@ -30,25 +30,11 @@ Then navigate to the repository and run the `install.sh` script, as with the com
 
 ### What Installation Does
 
-The installer will check that you have the required programs before installing (by simply checking that the shell knows the commands `git`, `gcc`, and so forth).
+The installer will check that you have the required programs before installing (by simply checking that the shell knows the commands `git`, `gcc`, and so forth). If you do, it will check whether you have Go and MySQL installed (by the same method). If either of them are missing, it will ask you if you want to install them.
 
-### React
+Then the installer will install `go-mysql-driver`. And it will run the command `yarn install`, which looks at the `yarn.lock` file and installs the dependencies it sees there.
 
-First, you need to [install](https://classic.yarnpkg.com/en/docs/install/#mac-stable) Yarn package manager. Then you can navigate to the project directory in the terminal, and run the command `yarn install`. It should create a folder `<project-directory>/node_modules`, where the necessary packages are installed. There is a `yarn.lock` file in the repository, which instructs Yarn which packages are necessary.
-
-### Go
-
-To run the server, you should [have Go installed](http://golang.org/doc/install.html) on your machine. You should also have the [Go MySQL driver](https://github.com/go-sql-driver/mysql) installed.  
-
-### MySQL
-
-Currently the app is set up to run off a MySQL database hosted on your local machine. Therefore, you should create a database to hold your todo items. Currently the only requirement of the database is that is has a table called `tasks` which has a field called `title`, which is a `VARCHAR(255)`.
-
-Running the command
-
-    go run <project-dir>/main.go <project-dir>/database.go
-
-will log you into your database and start the server. You may care to look at the function `database.go::getLoginString`, where the login string is formatted. There you will see that the username is currently set to `root`, the port is set to `3306`, and the database title is set to `TodoList`. All of these are adjustable, of course. The password for the database is read in from a file called `password.txt`, which you should create in the project directory. It should have nothing but the password in it (and no newline afterward). It has already been placed in `.gitignore` for you.
+Finally, the installer will configure MySQL and set up an appropriate database for the app. It will find the temporary password that was created for you when MySQL was installed, and prompt you to replace it with a password of your own. Then it will setup a login path for you on MySQL, so you don't have to keep putting in your password. Then it will create a database for you, and insert a dummy item into it.
 
 ## Operation
 
@@ -61,3 +47,5 @@ to start the server. Then, in a separate terminal process, simply type
     yarn start
 
 This will start up the frontend and automatically open the site in a new browser window. Currently the backend operates on port `8080` and the frontend on port `3000`. So the site will be hosted on `localhost:3000`.
+
+You may also wish to run one of the test scripts that are provided, for instance `testbackend`. Be careful if you do, since these will terminate any process on port `8080` that they find. 
