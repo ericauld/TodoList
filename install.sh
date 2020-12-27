@@ -9,7 +9,9 @@ main() {
     make_sure_system_already_has_prerequisites
 
     local packages_to_install="go mysql"
-    install_packages $(missing $packages_to_install)
+    local missing_packages=$(missing $packages_to_install)
+    get_users_permission_to_install $missing_packages
+    install_packages $missing_packages
 
     install_drivers_and_dependencies
 
@@ -101,6 +103,21 @@ missing() {
         fi
     done
     echo $missing_packages
+}
+
+get_users_permission_to_install() {
+    local missing_packages=$@
+    echo "May the TodoList installer install the following packages on your machine?"
+    for pckg in $missing_packages; do
+        echo $pckg
+    done
+    read -p "[y/N] " -n 1 -r
+    echo    # move to a new line
+    if [[ ! $REPLY =~ ^[Yy]$ ]]
+    then
+        echo "User declined to install packages. Install script exiting"
+        exit 1
+    fi
 }
 
 tell_user_to_install() {
