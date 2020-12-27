@@ -1,8 +1,36 @@
-# Todo List
 
 A simple todo list implemented with React, MySQL, and a Go backend. This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Requirements
+So far the app has only been tested on Amazon Linux. It is in the process of being adapted for MacOS.
+
+Before you install the app, you must have [Yarn](https://classic.yarnpkg.com/en/docs/install) and [Node](https://nodejs.org/en/download/package-manager). You may care to install Node with a package manager, as described [here](https://classic.yarnpkg.com/en/docs/install/#centos-stable) for Amazon Linux/Red Hat Linux. Also required for the app are gcc and git. 
+
+If you are on Amazon Linux, you must have `yum` and `wget` installed (but you probably already do).
+
+If you use MacOS you will need `curl` in order to install. 
+
+## Installation
+
+Once you have installed the prerequisites, create a folder to install the app in. In order for Go packages to integrate smoothly, I recommend you use the directory `~/go/src/github.com/ericauld`, for instance with the terminal command
+
+`mkdir -p ~/go/src/github.com/ericauld`
+
+Then clone the repository into your new folder, for instance with the terminal commands
+
+`cd ~/go/src/github.com/ericauld`
+
+`git clone https://github.com/ericauld/TodoList.git`
+
+Then navigate to the repository and run the `install.sh` script, as with the commands
+
+`cd TodoList`
+
+`./install.sh`
+
+### What Installation Does
+
+The installer will check that you have the required programs before installing (by simply checking that the shell knows the commands `git`, `gcc`, and so forth).
 
 ### React
 
